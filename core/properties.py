@@ -48,11 +48,27 @@ def register() -> None:
         min=0.0,
         max=2.0
     )
-
     bpy.types.Scene.selected_armature = bpy.props.EnumProperty(
         items=get_armatures,
         name="Selected Armature",
         description="The currently selected armature for Avatar Toolkit operations"
+    )
+
+    bpy.types.Scene.eye_left = bpy.props.StringProperty(
+    name=t("EyeTracking.eye_left"),
+    description=t("EyeTracking.eye_left_desc")
+    )
+    bpy.types.Scene.eye_blink_right = bpy.props.StringProperty(
+        name=t("EyeTracking.blink_right"),
+        description=t("EyeTracking.blink_right_desc")
+    )
+    bpy.types.Scene.eye_blink_left = bpy.props.StringProperty(
+        name=t("EyeTracking.blink_left"),
+        description=t("EyeTracking.blink_left_desc")
+    )
+    bpy.types.Scene.eye_blink_right = bpy.props.StringProperty(
+        name=t("EyeTracking.blink_right"),
+        description=t("EyeTracking.blink_right_desc")
     )
     
     #happy with how compressed this get_texture_node_list method is - @989onan
