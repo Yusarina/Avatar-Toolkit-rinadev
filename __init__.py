@@ -27,8 +27,11 @@ def register():
     core.register.order_classes()
     # Register the UI classes
     for cls in core.register.__bl_ordered_classes:
-        print("registering " + str(cls))
-        bpy.utils.register_class(cls)
+        try:
+            bpy.utils.register_class(cls)
+            print("registering " + str(cls))
+        except Exception as e:
+            print(f"Failed to register {cls}: {str(e)}")
 
     #finally register properties that may use some classes.
     core.register.register_properties()
@@ -44,7 +47,12 @@ def unregister():
 
     # Iterate over the classes to unregister in reverse order and unregister them
     for cls in reversed(list(__bl_ordered_classes)):
-        bpy.utils.unregister_class(cls)
-        print("unregistering " + str(cls))
+        try:
+            bpy.utils.unregister_class(cls)
+            print("unregistering " + str(cls))
+        except RuntimeError:
+            print(f"Failed to unregister {cls}, it may not have been registered")
+    
     core.register.unregister_properties()
     properties.unregister()
+
