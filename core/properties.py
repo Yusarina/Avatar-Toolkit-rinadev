@@ -795,6 +795,50 @@ class AvatarToolkitSceneProperties(PropertyGroup):
         description="Remove bones with zero or near-zero vertex weights",
         default=False
     )
+    
+    # MMD Phase 3 Properties - Scene & Transform Setup
+    mmd_remove_rigidbodies: BoolProperty(
+        name=t("MMD.remove_rigidbodies"),
+        description="Remove rigidbody and joint objects from the model",
+        default=True
+    )
+    
+    mmd_join_meshes: BoolProperty(
+        name=t("MMD.join_meshes"),
+        description="Join all child meshes into a single body mesh",
+        default=True
+    )
+    
+    mmd_apply_transforms: BoolProperty(
+        name=t("MMD.apply_transforms"),
+        description="Apply location, rotation and scale transforms",
+        default=True
+    )
+    
+    mmd_remove_empty_objects: BoolProperty(
+        name=t("MMD.remove_empty_objects"),
+        description="Remove MMD empty parent objects and clean up unused data",
+        default=True
+    )
+    
+    mmd_fix_fbx_scale: BoolProperty(
+        name=t("MMD.fix_fbx_scale"),
+        description="Fix 0.01 scale from FBX imports",
+        default=True
+    )
+    
+    # MMD Phase 4 Properties - Mesh Processing
+    mmd_clean_shapekeys: BoolProperty(
+        name=t("MMD.clean_shapekeys"),
+        description="Remove unused/empty shape keys from meshes",
+        default=True
+    )
+    
+    mmd_remove_doubles: BoolProperty(
+        name=t("MMD.remove_doubles"),
+        description="Remove duplicate vertices while preserving shape keys",
+        default=True
+    )
 
     # Translation System Properties
     translation_service: EnumProperty(

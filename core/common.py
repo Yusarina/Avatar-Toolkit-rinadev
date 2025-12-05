@@ -776,6 +776,384 @@ def restore_breaking_settings_armature(armature: bpy.types.Object, data: Armatur
     armature_data: bpy.types.Armature = armature.data
     armature_data.use_mirror_x, armature.pose.use_mirror_x = data
 
+class SavedData:
+    __object_properties = {}
+    __active_object = None
+
+    def __init__(self):
+        context = bpy.context
+        # initialize as instance attributes rather than class attributes
+        self.__object_properties = {}
+        self.__active_object = None
+
+        for obj in get_objects():
+            mode = obj.mode
+            selected = obj.select_get()
+            hidden = is_hidden(obj)
+            pose = None
+            if obj.type == 'ARMATURE':
+                pose = obj.data.pose_position
+            self.__object_properties[obj.name] = [mode, selected, hidden, pose]
+
+            active = context.view_layer.objects.active
+            if active:
+                self.__active_object = active.name
+
+    def load(self, ignore=None, load_mode=True, load_select=True, load_hide=True, load_active=True, hide_only=False):
+        if not ignore:
+            ignore = []
+        if hide_only:
+            load_mode = False
+            load_select = False
+            load_active = False
+
+        for obj_name, values in self.__object_properties.items():
+            if obj_name in ignore:
+                continue
+
+            obj = get_objects().get(obj_name)
+            if not obj:
+                continue
+
+            mode, selected, hidden, pose = values
+            print(obj_name, pose)
+
+            if load_mode and obj.mode != mode:
+                set_active(obj, skip_sel=True)
+                switch(mode, check_mode=False)
+                if pose:
+                    obj.data.pose_position = pose
+
+            if load_select:
+                select(obj, selected)
+
+            if load_hide:
+                hide(obj, hidden)
+
+        if load_active and self.__active_object:
+            obj = get_objects().get(self.__active_object)
+            if obj:
+                set_active(obj, skip_sel=True)
+
+def get_armature_objects():
+    armatures = []
+    for obj in get_objects():
+        if obj.type == 'ARMATURE':
+            armatures.append(obj)
+    return armatures
 
 
+def get_top_parent(child):
+    if child.parent:
+        return get_top_parent(child.parent)
+    return child
 
+
+def unhide_all_unnecessary():
+    try:
+        bpy.ops.object.hide_view_clear()
+    except RuntimeError:
+        pass
+
+    for collection in bpy.data.collections:
+        collection.hide_viewport = False
+
+
+def unhide_all():
+    for obj in get_objects():
+        hide(obj, False)
+
+
+def unhide_children(parent):
+    for child in parent.children:
+        hide(child, False)
+        set_unselectable(child, False)
+        unhide_children(child)
+
+
+def unhide_all_of(obj_to_unhide=None):
+    if not obj_to_unhide:
+        obj_to_unhide = bpy.context.active_object
+
+    top_parent = get_top_parent(obj_to_unhide)
+    hide(top_parent, False)
+    set_unselectable(top_parent, False)
+    unhide_children(top_parent)
+
+
+def unselect_all():
+    for obj in get_objects():
+        select(obj, False)
+
+
+def set_active(obj, skip_sel=False):
+    if not skip_sel:
+        unselect_all()
+    bpy.context.view_layer.objects.active = obj
+    select(obj)
+
+
+def select(obj, sel=True):
+    if obj is not None:
+        try:
+            obj.select_set(sel)
+        except:
+            pass
+
+
+def hide(obj, val=True):
+    if hasattr(obj, 'hide_set'):
+        obj.hide_set(val)
+    elif hasattr(obj, 'hide'):
+        obj.hide = val
+
+
+def is_hidden(obj):
+    if hasattr(obj, 'hide_get'):
+        return obj.hide_get()
+    elif hasattr(obj, 'hide'):
+        return obj.hide
+    return False
+
+
+def set_unselectable(obj, val=True):
+    obj.hide_select = val
+
+def remove_empty():
+    armature = set_default_stage()
+    if armature and armature.parent and armature.parent.type == 'EMPTY':
+        bpy.data.objects.remove(armature.parent, do_unlink=True)
+
+
+def remove_unused_objects():
+    default_scene_objects = []
+    
+    for obj in get_objects():
+        if is_default_object(obj):
+            default_scene_objects.append(obj)
+
+    if len(default_scene_objects) == 3:
+        for obj in default_scene_objects:
+            bpy.data.objects.remove(obj, do_unlink=True)
+
+
+def is_default_object(obj):
+    # Check if the object is one of the default objects based on type
+    if obj.type == 'CAMERA' and obj.data.name == 'Camera':
+        return True
+    elif obj.type == 'LAMP' and obj.data.name == 'Lamp':
+        return True
+    elif obj.type == 'LIGHT' and obj.data.name == 'Light':
+        return True
+    elif obj.type == 'MESH' and obj.data.name == 'Cube':
+        return True
+    return False
+
+def apply_modifier(mod, as_shapekey=False):
+    if bpy.app.version < (2, 90):
+        return bpy.ops.object.modifier_apply(apply_as='SHAPE', modifier=mod.name) if as_shapekey \
+            else bpy.ops.object.modifier_apply(apply_as='DATA', modifier=mod.name)
+
+    if as_shapekey:
+        return bpy.ops.object.modifier_apply(modifier=mod.name, as_shapekey=True)
+    else:
+        return bpy.ops.object.modifier_apply(modifier=mod.name)
+
+
+def remove_unused_vertex_groups(ignore_main_bones=False):
+    remove_count = 0
+    unselect_all()
+    for mesh in get_meshes_objects(mode=2):
+        set_active(mesh)
+        
+        # Build list of vertex groups to remove
+        vgs_to_remove = []
+        for vg in mesh.vertex_groups:
+            if ignore_main_bones and vg.name in ['Hips', 'Spine', 'Chest', 'Neck', 'Head']:
+                continue
+            # Check if vertex group has any vertices assigned
+            has_verts = False
+            for v in mesh.data.vertices:
+                for g in v.groups:
+                    if g.group == vg.index and g.weight > 0:
+                        has_verts = True
+                        break
+                if has_verts:
+                    break
+            if not has_verts:
+                vgs_to_remove.append(vg)
+        
+        # Remove empty vertex groups
+        for vg in vgs_to_remove:
+            mesh.vertex_groups.remove(vg)
+            remove_count += 1
+    
+    return remove_count
+
+def clean_shapekeys(mesh):
+    # Remove empty shapekeys
+    if has_shapekeys(mesh):
+        for key_block in list(mesh.data.shape_keys.key_blocks):
+            if can_remove_shapekey(key_block):
+                mesh.shape_key_remove(key_block)
+
+
+def can_remove_shapekey(key_block):
+    if 'mmd_' in key_block.name:
+        return False
+    if key_block.relative_key == key_block:
+        return False
+    for v0, v1 in zip(key_block.relative_key.data, key_block.data):
+        if v0.co != v1.co:
+            return False
+    return True
+
+
+def save_shapekey_order(mesh_name):
+    mesh = get_objects()[mesh_name]
+    armature = get_armature()
+
+    if not armature:
+        return
+
+    # Get current custom data
+    sys_props = armature.bl_system_properties_get()
+    if not sys_props:
+        return
+    
+    custom_data = sys_props.get('CUSTOM')
+    
+    if not custom_data:
+        armature['CUSTOM'] = {}
+        custom_data = armature.get('CUSTOM')
+
+    # Create shapekey order
+    shape_key_order = []
+    if has_shapekeys(mesh):
+        for key in mesh.data.shape_keys.key_blocks:
+            shape_key_order.append(key.name)
+
+    # Check if there is already a shapekey order
+    if custom_data.get('shape_key_order'):
+        # Merge both shape key orders
+        old_shape_key_order = custom_data.get('shape_key_order')
+        if isinstance(old_shape_key_order, str):
+            old_shape_key_order = old_shape_key_order.split(',')
+        
+        for key_name in old_shape_key_order:
+            if key_name not in shape_key_order:
+                shape_key_order.append(key_name)
+
+    # Save order to custom data
+    custom_data['shape_key_order'] = shape_key_order
+
+    # Save custom data in armature
+    sys_props = armature.bl_system_properties_get()
+    if sys_props:
+        sys_props['CUSTOM'] = custom_data
+
+
+def sort_shape_keys(mesh_name, shape_key_order=None):
+    mesh = get_objects().get(mesh_name)
+    if not mesh or not has_shapekeys(mesh):
+        return
+    set_active(mesh)
+
+    shape_key_order = shape_key_order or []
+
+    order = [
+        'Basis',
+        'vrc.blink_left',
+        'vrc.blink_right',
+        'vrc.lowerlid_left',
+        'vrc.lowerlid_right',
+        'vrc.v_aa',
+        'vrc.v_ch',
+        'vrc.v_dd',
+        'vrc.v_e',
+        'vrc.v_ff',
+        'vrc.v_ih',
+        'vrc.v_kk',
+        'vrc.v_nn',
+        'vrc.v_oh',
+        'vrc.v_ou',
+        'vrc.v_pp',
+        'vrc.v_rr',
+        'vrc.v_sil',
+        'vrc.v_ss',
+        'vrc.v_th',
+        'Basis Original'
+    ]
+
+    for shape in shape_key_order:
+        if shape not in order:
+            order.append(shape)
+
+    wm = bpy.context.window_manager
+    current_step = 0
+    wm.progress_begin(current_step, len(order))
+
+    # Calculate max iterations once
+    max_iterations = len(mesh.data.shape_keys.key_blocks) + 5
+
+    i = 0
+    for name in order:
+        current_step += 1
+        wm.progress_update(current_step)
+
+        if name not in mesh.data.shape_keys.key_blocks:
+            continue
+
+        index_now = mesh.data.shape_keys.key_blocks.keys().index(name)
+        index_should = i
+
+        if index_now == index_should:
+            i += 1
+            continue
+
+        mesh.active_shape_key_index = index_now
+        position_move = index_should - index_now
+
+        iteration = 0
+        while mesh.active_shape_key_index != index_should:
+            if position_move > 0:
+                bpy.ops.object.shape_key_move(type='DOWN')
+            elif position_move < 0:
+                bpy.ops.object.shape_key_move(type='UP')
+            
+            iteration += 1
+            if iteration > max_iterations:
+                break
+
+        i += 1
+
+    mesh.active_shape_key_index = 0
+
+    wm.progress_end()
+
+
+def delete_hierarchy(parent):
+    unselect_all()
+    to_delete = []
+
+    def get_child_names(obj):
+        for child in obj.children:
+            to_delete.append(child)
+            get_child_names(child)
+
+    get_child_names(parent)
+    to_delete.append(parent)
+
+    objs = bpy.data.objects
+    for obj in to_delete:
+        objs.remove(objs[obj.name], do_unlink=True)
+
+
+def delete(obj):
+    if obj.parent:
+        matrix_world = obj.matrix_world
+        obj.parent = None
+        obj.matrix_world = matrix_world
+
+    objs = bpy.data.objects
+    objs.remove(objs[obj.name], do_unlink=True)

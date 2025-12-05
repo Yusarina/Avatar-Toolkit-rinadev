@@ -298,6 +298,86 @@ unity_bone_hierarchy: Dict[str, Optional[str]] = {
     "Right toe": "Right ankle",
 }
 
+# MMD BONE RENAME DICTIONARIES
+# Used for converting MMD bone names to Unity/VRChat standard names
+
+# MMD bone rename dictionary (Japanese/MMD -> Unity Standard)
+# Key is target name, values are source names to match
+mmd_bone_rename: Dict[str, List[str]] = {
+    'Hips': ['全ての親', 'センター', 'center', 'グルーブ', 'groove', '腰', 'waist'],
+    'Spine': ['上半身', 'upper body', 'upperbody'],
+    'Chest': ['上半身2', 'upper body2', 'upperbody2'],
+    'Neck': ['首', 'neck'],
+    'Head': ['頭', 'head'],
+    
+    'LeftShoulder': ['左肩', 'shoulder_l', 'shoulderl', 'leftshoulder'],
+    'LeftUpperArm': ['左腕', 'arm_l', 'arml', 'leftarm', 'left arm'],
+    'LeftLowerArm': ['左ひじ', 'elbow_l', 'elbowl', 'leftelbow', 'left elbow'],
+    'LeftHand': ['左手首', 'wrist_l', 'wristl', 'leftwrist', 'left wrist', '左手'],
+    
+    'RightShoulder': ['右肩', 'shoulder_r', 'shoulderr', 'rightshoulder'],
+    'RightUpperArm': ['右腕', 'arm_r', 'armr', 'rightarm', 'right arm'],
+    'RightLowerArm': ['右ひじ', 'elbow_r', 'elbowr', 'rightelbow', 'right elbow'],
+    'RightHand': ['右手首', 'wrist_r', 'wristr', 'rightwrist', 'right wrist', '右手'],
+    
+    'LeftUpperLeg': ['左足', 'leg_l', 'legl', 'leftleg', 'left leg'],
+    'LeftLowerLeg': ['左ひざ', 'knee_l', 'kneel', 'leftknee', 'left knee'],
+    'LeftFoot': ['左足首', 'ankle_l', 'anklel', 'leftankle', 'left ankle'],
+    'LeftToes': ['左つま先', 'toe_l', 'toel', 'lefttoe', 'left toe'],
+    
+    'RightUpperLeg': ['右足', 'leg_r', 'legr', 'rightleg', 'right leg'],
+    'RightLowerLeg': ['右ひざ', 'knee_r', 'kneer', 'rightknee', 'right knee'],
+    'RightFoot': ['右足首', 'ankle_r', 'ankler', 'rightankle', 'right ankle'],
+    'RightToes': ['右つま先', 'toe_r', 'toer', 'righttoe', 'right toe'],
+    
+    'LeftEye': ['左目', 'eye_l', 'eyel', 'lefteye'],
+    'RightEye': ['右目', 'eye_r', 'eyer', 'righteye'],
+}
+
+# Bones to reweight (merge weights from these bones to target)
+mmd_bone_reweight: Dict[str, List[str]] = {
+    'Hips': ['下半身', 'lower body', 'lowerbody'],
+    'Spine': ['腰', 'waist'],
+}
+
+# MMD Finger bone patterns (Japanese/MMD -> Unity Standard)
+mmd_finger_patterns: Dict[str, Dict[str, List[str]]] = {
+    'left': {
+        'LeftThumb1': ['左親指０', '左親指0', 'thumb0_l'],
+        'LeftThumb2': ['左親指１', '左親指1', 'thumb1_l'],
+        'LeftThumb3': ['左親指２', '左親指2', 'thumb2_l'],
+        'LeftIndex1': ['左人指１', '左人指1', '左人差指１', 'fore1_l', 'index1_l'],
+        'LeftIndex2': ['左人指２', '左人指2', '左人差指２', 'fore2_l', 'index2_l'],
+        'LeftIndex3': ['左人指３', '左人指3', '左人差指３', 'fore3_l', 'index3_l'],
+        'LeftMiddle1': ['左中指１', '左中指1', 'middle1_l'],
+        'LeftMiddle2': ['左中指２', '左中指2', 'middle2_l'],
+        'LeftMiddle3': ['左中指３', '左中指3', 'middle3_l'],
+        'LeftRing1': ['左薬指１', '左薬指1', 'third1_l', 'ring1_l'],
+        'LeftRing2': ['左薬指２', '左薬指2', 'third2_l', 'ring2_l'],
+        'LeftRing3': ['左薬指３', '左薬指3', 'third3_l', 'ring3_l'],
+        'LeftLittle1': ['左小指１', '左小指1', 'little1_l', 'pinky1_l'],
+        'LeftLittle2': ['左小指２', '左小指2', 'little2_l', 'pinky2_l'],
+        'LeftLittle3': ['左小指３', '左小指3', 'little3_l', 'pinky3_l'],
+    },
+    'right': {
+        'RightThumb1': ['右親指０', '右親指0', 'thumb0_r'],
+        'RightThumb2': ['右親指１', '右親指1', 'thumb1_r'],
+        'RightThumb3': ['右親指２', '右親指2', 'thumb2_r'],
+        'RightIndex1': ['右人指１', '右人指1', '右人差指１', 'fore1_r', 'index1_r'],
+        'RightIndex2': ['右人指２', '右人指2', '右人差指２', 'fore2_r', 'index2_r'],
+        'RightIndex3': ['右人指３', '右人指3', '右人差指３', 'fore3_r', 'index3_r'],
+        'RightMiddle1': ['右中指１', '右中指1', 'middle1_r'],
+        'RightMiddle2': ['右中指２', '右中指2', 'middle2_r'],
+        'RightMiddle3': ['右中指３', '右中指3', 'middle3_r'],
+        'RightRing1': ['右薬指１', '右薬指1', 'third1_r', 'ring1_r'],
+        'RightRing2': ['右薬指２', '右薬指2', 'third2_r', 'ring2_r'],
+        'RightRing3': ['右薬指３', '右薬指3', 'third3_r', 'ring3_r'],
+        'RightLittle1': ['右小指１', '右小指1', 'little1_r', 'pinky1_r'],
+        'RightLittle2': ['右小指２', '右小指2', 'little2_r', 'pinky2_r'],
+        'RightLittle3': ['右小指３', '右小指3', 'little3_r', 'pinky3_r'],
+    },
+}
+
 # Create reverse lookup dictionaries
 reverse_shapekey_lookup: Dict[str, str] = {}
 reverse_material_lookup: Dict[str, str] = {}
