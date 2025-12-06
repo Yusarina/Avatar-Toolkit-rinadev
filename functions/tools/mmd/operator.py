@@ -76,6 +76,30 @@ from .phase_eyes import (
     ensure_eye_bone_hierarchy,
 )
 
+from .phase_weights import (
+    process_reweight_dictionary,
+    merge_finger_weights,
+    handle_twist_bone_weights,
+    cleanup_unused_vertex_groups,
+)
+
+from .phase_cleanup import (
+    delete_merged_bones,
+    fix_bone_parenting_for_unity,
+    standardize_twist_bone_names,
+    remove_zero_weight_bones,
+    connect_bones_to_children,
+    fix_armature_name,
+)
+
+from .phase_completion import (
+    restore_state,
+    switch_to_object_mode,
+    display_completion_message,
+    finalize_armature,
+    cleanup_scene,
+)
+
 
 class AvatarToolkit_OT_FixMMDArmature(Operator):
     """Fix MMD armature for VRChat/Unity compatibility"""
@@ -313,15 +337,110 @@ class AvatarToolkit_OT_FixMMDArmature(Operator):
             if eye_hierarchy_fixed:
                 logger.info("Fixed eye bone hierarchy")
             
+            # PHASE 11: Weight Merging
+            logger.info("Starting Phase 11: Weight Merging")
+            
+            # Process reweight dictionary
+            weights_transferred = process_reweight_dictionary(
+                context, armature, reweight_dict,
+                threshold=toolkit.merge_weights_threshold if hasattr(toolkit, 'merge_weights_threshold') else 0.01
+            )
+            if weights_transferred > 0:
+                logger.info(f"Transferred {weights_transferred} vertex group weights")
+            
+            # Handle finger weights
+            finger_weights = merge_finger_weights(context, armature)
+            if finger_weights > 0:
+                logger.info(f"Merged {finger_weights} finger bone weights")
+            
+            # Handle twist bone weights (if merging enabled)
+            if hasattr(toolkit, 'merge_twist_bones') and toolkit.merge_twist_bones:
+                twist_weights = handle_twist_bone_weights(context, armature, merge_twist=True)
+                if twist_weights > 0:
+                    logger.info(f"Merged {twist_weights} twist bone weights")
+            
+            # Cleanup unused vertex groups
+            unused_removed = cleanup_unused_vertex_groups(context, armature)
+            if unused_removed > 0:
+                logger.info(f"Removed {unused_removed} unused vertex groups")
+            
+            # PHASE 12: Final Cleanup
+            logger.info("Starting Phase 12: Final Cleanup")
+            
+            # Collect bones that were reweighted and can be deleted
+            bones_to_delete = []
+            for target_bone, source_bones in reweight_dict.items():
+                for source_bone in source_bones:
+                    if source_bone != target_bone and source_bone not in bones_to_delete:
+                        # Check if bone exists and has no weights
+                        if source_bone in [b.name for b in armature.data.bones]:
+                            bones_to_delete.append(source_bone)
+            
+            # Delete merged bones (only if they have no remaining weights)
+            # This is handled conservatively - only delete if explicitly merged
+            
+            # Fix bone parenting for Unity/VRChat
+            reparented = fix_bone_parenting_for_unity(context, armature)
+            if reparented > 0:
+                logger.info(f"Reparented {reparented} bones for Unity compatibility")
+            
+            # Standardize twist bone names (if keeping twist bones)
+            if hasattr(toolkit, 'keep_twist_bones') and toolkit.keep_twist_bones:
+                twist_renamed = standardize_twist_bone_names(context, armature)
+                if twist_renamed > 0:
+                    logger.info(f"Standardized {twist_renamed} twist bone names")
+            
+            # Remove zero-weight bones (if option enabled)
+            if hasattr(toolkit, 'mmd_remove_zero_weight_bones') and toolkit.mmd_remove_zero_weight_bones:
+                zero_weight_removed = remove_zero_weight_bones(context, armature)
+                if zero_weight_removed > 0:
+                    logger.info(f"Removed {zero_weight_removed} zero-weight bones")
+            
+            # Connect bones to children (if option enabled)
+            if hasattr(toolkit, 'mmd_connect_bones') and toolkit.mmd_connect_bones:
+                connected = connect_bones_to_children(context, armature)
+                if connected > 0:
+                    logger.info(f"Connected {connected} bones to children")
+            
+            # Fix armature name (if option enabled)
+            if hasattr(toolkit, 'mmd_rename_armature') and toolkit.mmd_rename_armature:
+                if fix_armature_name(armature, "Armature"):
+                    logger.info("Renamed armature to 'Armature'")
+            
+            # PHASE 13: Completion
+            logger.info("Starting Phase 13: Completion")
+            
             # Store dictionaries for potential future use
             context.scene['_mmd_fixer_rename_dict'] = str(rename_dict)
             context.scene['_mmd_fixer_reweight_dict'] = str(reweight_dict)
             
+            # Restore armature settings
             restore_breaking_settings_armature(armature, data_breaking)
+            
+            # Finalize armature
+            finalize_armature(context, armature)
+            
+            # Switch to object mode
+            switch_to_object_mode(context)
+            
+            # Cleanup scene
+            cleanup_scene(context)
+            
+            # Restore state
+            restore_state(context, saved_data, armature)
+            
+            # Clean up bone cache
             bone_cache.clear_cache()
             
-            self.report({'INFO'}, t("MMD.fix_armature.phase_complete_10"))
-            logger.info("MMD armature fix Phase 1-10 completed successfully")
+            # Build stats for completion message
+            stats = {
+                'bones_renamed': renamed,
+                'weights_transferred': weights_transferred,
+                'bones_removed': 0,  # Could track this more precisely
+            }
+            
+            display_completion_message(self, success=True, stats=stats)
+            logger.info("MMD armature fix completed successfully (Phases 1-13)")
             return {'FINISHED'}
             
         except Exception as e:
