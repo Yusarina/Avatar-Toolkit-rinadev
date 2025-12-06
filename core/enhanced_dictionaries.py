@@ -378,6 +378,90 @@ mmd_finger_patterns: Dict[str, Dict[str, List[str]]] = {
     },
 }
 
+# Unity Humanoid Standard Bone Names
+# Maps from dictionaries.py format (left_arm, right_wrist) to Unity format (LeftUpperArm, RightHand)
+unity_bone_names: Dict[str, str] = {
+    # Core bones
+    'hips': 'Hips',
+    'spine': 'Spine',
+    'chest': 'Chest',
+    'upper_chest': 'UpperChest',
+    'neck': 'Neck',
+    'head': 'Head',
+    
+    # Left arm
+    'left_shoulder': 'LeftShoulder',
+    'left_arm': 'LeftUpperArm',
+    'left_elbow': 'LeftLowerArm',
+    'left_wrist': 'LeftHand',
+    
+    # Right arm
+    'right_shoulder': 'RightShoulder',
+    'right_arm': 'RightUpperArm',
+    'right_elbow': 'RightLowerArm',
+    'right_wrist': 'RightHand',
+    
+    # Left leg
+    'left_leg': 'LeftUpperLeg',
+    'left_knee': 'LeftLowerLeg',
+    'left_ankle': 'LeftFoot',
+    'left_toe': 'LeftToes',
+    
+    # Right leg
+    'right_leg': 'RightUpperLeg',
+    'right_knee': 'RightLowerLeg',
+    'right_ankle': 'RightFoot',
+    'right_toe': 'RightToes',
+    
+    # Eyes
+    'left_eye': 'LeftEye',
+    'right_eye': 'RightEye',
+    
+    # Left hand fingers
+    'thumb_0_l': 'LeftThumb1',
+    'thumb_1_l': 'LeftThumb2',
+    'thumb_2_l': 'LeftThumb3',
+    'thumb_3_l': 'LeftThumb3',
+    'index_0_l': 'LeftIndex1',
+    'index_1_l': 'LeftIndex2',
+    'index_2_l': 'LeftIndex3',
+    'index_3_l': 'LeftIndex3',
+    'middle_0_l': 'LeftMiddle1',
+    'middle_1_l': 'LeftMiddle2',
+    'middle_2_l': 'LeftMiddle3',
+    'middle_3_l': 'LeftMiddle3',
+    'ring_0_l': 'LeftRing1',
+    'ring_1_l': 'LeftRing2',
+    'ring_2_l': 'LeftRing3',
+    'ring_3_l': 'LeftRing3',
+    'pinkie_0_l': 'LeftLittle1',
+    'pinkie_1_l': 'LeftLittle2',
+    'pinkie_2_l': 'LeftLittle3',
+    'pinkie_3_l': 'LeftLittle3',
+    
+    # Right hand fingers
+    'thumb_0_r': 'RightThumb1',
+    'thumb_1_r': 'RightThumb2',
+    'thumb_2_r': 'RightThumb3',
+    'thumb_3_r': 'RightThumb3',
+    'index_0_r': 'RightIndex1',
+    'index_1_r': 'RightIndex2',
+    'index_2_r': 'RightIndex3',
+    'index_3_r': 'RightIndex3',
+    'middle_0_r': 'RightMiddle1',
+    'middle_1_r': 'RightMiddle2',
+    'middle_2_r': 'RightMiddle3',
+    'middle_3_r': 'RightMiddle3',
+    'ring_0_r': 'RightRing1',
+    'ring_1_r': 'RightRing2',
+    'ring_2_r': 'RightRing3',
+    'ring_3_r': 'RightRing3',
+    'pinkie_0_r': 'RightLittle1',
+    'pinkie_1_r': 'RightLittle2',
+    'pinkie_2_r': 'RightLittle3',
+    'pinkie_3_r': 'RightLittle3',
+}
+
 # Create reverse lookup dictionaries
 reverse_shapekey_lookup: Dict[str, str] = {}
 reverse_material_lookup: Dict[str, str] = {}

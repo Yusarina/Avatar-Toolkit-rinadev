@@ -4,7 +4,7 @@ from .main_panel import AvatarToolKit_PT_AvatarToolkitPanel, CATEGORY_NAME
 from .panel_layout import get_panel_order, should_open_by_default
 from ..core.translations import t
 from ..core.common import get_active_armature
-from ..functions.tools.mmd_armature_fixer import detect_mmd_armature, get_mmd_root
+from ..functions.tools.mmd import detect_mmd_armature, get_mmd_root
 
 
 class AvatarToolKit_PT_MMDPanel(Panel):
@@ -79,8 +79,8 @@ class AvatarToolKit_PT_MMDPanel(Panel):
             
             options_col.separator(factor=0.3)
             options_col.label(text=t("MMD.bone_options"), icon='BONE_DATA')
-            options_col.prop(toolkit, 'mmd_restructure_bones', text=t("MMD.restructure_bones"))
             options_col.prop(toolkit, 'mmd_remove_twist_bones', text=t("MMD.remove_twist_bones"))
+            options_col.prop(toolkit, 'mmd_remove_end_bones', text=t("MMD.remove_end_bones"))
             options_col.prop(toolkit, 'mmd_remove_zero_weight_bones', text=t("MMD.remove_zero_weight_bones"))
             
             options_col.separator(factor=0.3)
@@ -88,13 +88,14 @@ class AvatarToolKit_PT_MMDPanel(Panel):
             options_col.prop(toolkit, 'mmd_remove_rigidbodies', text=t("MMD.remove_rigidbodies"))
             options_col.prop(toolkit, 'mmd_join_meshes', text=t("MMD.join_meshes"))
             options_col.prop(toolkit, 'mmd_apply_transforms', text=t("MMD.apply_transforms"))
-            options_col.prop(toolkit, 'mmd_remove_empty_objects', text=t("MMD.remove_empty_objects"))
-            options_col.prop(toolkit, 'mmd_fix_fbx_scale', text=t("MMD.fix_fbx_scale"))
             
             options_col.separator(factor=0.3)
             options_col.label(text=t("MMD.mesh_options"), icon='MESH_DATA')
-            options_col.prop(toolkit, 'mmd_clean_shapekeys', text=t("MMD.clean_shapekeys"))
             options_col.prop(toolkit, 'mmd_remove_doubles', text=t("MMD.remove_doubles"))
+            
+            options_col.separator(factor=0.3)
+            options_col.label(text=t("MMD.bone_cleanup_options"), icon='BRUSH_DATA')
+            options_col.prop(toolkit, 'mmd_delete_bone_constraints', text=t("MMD.delete_bone_constraints"))
             
             options_col.separator(factor=0.3)
             options_col.label(text=t("MMD.advanced_options"), icon='PREFERENCES')
@@ -122,8 +123,12 @@ class AvatarToolKit_PT_MMDPanel(Panel):
             info_col.label(text=t("MMD.fix_info.phase2"))
             info_col.label(text=t("MMD.fix_info.translate"))
             info_col.label(text=t("MMD.fix_info.mesh_processing"))
-            info_col.label(text=t("MMD.fix_info.standardize"))
-            info_col.label(text=t("MMD.fix_info.cleanup"))
+            info_col.label(text=t("MMD.fix_info.bone_visibility"))
+            info_col.label(text=t("MMD.fix_info.bone_cleanup"))
+            info_col.label(text=t("MMD.fix_info.bone_standardize"))
+            info_col.label(text=t("MMD.fix_info.hierarchy_fix"))
+            info_col.label(text=t("MMD.fix_info.spine_fix"))
+            info_col.label(text=t("MMD.fix_info.eye_processing"))
             
         else:
             col.label(text=t("MMD.armature_name", name=armature.name), icon='ERROR')

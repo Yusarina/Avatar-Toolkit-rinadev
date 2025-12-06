@@ -786,7 +786,13 @@ class AvatarToolkitSceneProperties(PropertyGroup):
     
     mmd_remove_twist_bones: BoolProperty(
         name=t("MMD.remove_twist_bones"),
-        description="Remove twist bones",
+        description="Remove twist bones and transfer weights to parent bones",
+        default=True
+    )
+    
+    mmd_remove_end_bones: BoolProperty(
+        name=t("MMD.remove_end_bones"),
+        description="Remove end/tip bones that have no children",
         default=True
     )
     
@@ -837,6 +843,38 @@ class AvatarToolkitSceneProperties(PropertyGroup):
     mmd_remove_doubles: BoolProperty(
         name=t("MMD.remove_doubles"),
         description="Remove duplicate vertices while preserving shape keys",
+        default=True
+    )
+
+    # MMD Phase 5 Properties - Bone Translation & Visibility
+    mmd_unhide_all_bones: BoolProperty(
+        name="Unhide All Bones",
+        description="Make all bones visible (unhide hidden bones)",
+        default=True
+    )
+    
+    mmd_reset_pose: BoolProperty(
+        name="Reset Pose Position",
+        description="Clear all bone rotations, scales, and transforms to rest pose",
+        default=True
+    )
+
+    # MMD Phase 6 Properties - Bone Cleanup
+    mmd_remove_bone_collections: BoolProperty(
+        name="Remove Bone Collections",
+        description="Remove MMD bone collections/layers",
+        default=True
+    )
+    
+    mmd_delete_bone_constraints: BoolProperty(
+        name="Delete Bone Constraints",
+        description="Remove all bone constraints (IK, Copy Rotation, etc.)",
+        default=True
+    )
+    
+    mmd_reset_bone_visibility: BoolProperty(
+        name="Reset Bone Visibility",
+        description="Reset bone visibility and layers for all bones",
         default=True
     )
 
